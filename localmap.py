@@ -89,10 +89,8 @@ for y_snap in range(min_y_snap, max_y_snap + STEP, STEP):
     for x_snap in range(min_x_snap, max_x_snap + STEP, STEP):
         checking.append((x_snap, y_snap))
         # check cones individually if edge snap-point
-        if (x_snap, y_snap) in map.keys() and (y_snap == min_y_snap or 
-                                               y_snap == max_y_snap or 
-                                               x_snap == min_x_snap or 
-                                               x_snap == max_x_snap):
+        if (x_snap, y_snap) in map.keys() and (y_snap in {min_y_snap, max_y_snap} 
+                                                or x_snap in {min_x_snap, max_x_snap}):
             for cone in map[(x_snap,y_snap)]:
                 if coords_within_range(car, cone, radius):
                     in_range.append(cone)
