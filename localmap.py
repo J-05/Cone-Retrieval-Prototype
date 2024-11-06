@@ -1,16 +1,19 @@
 import math
 
 # setting range of map for testing purposes
-MIN = 5 # for both x and y
-MAX = -5
-STEP = 2 # intervals that cones snap to
+MIN = 100 # for both x and y
+MAX = -100
+STEP = 20 # intervals that cones snap to
+num_of_cones = 100
+radius = 30
 
-num_of_cones = 10
 map = {}
-radius = 5
 in_range = []
 checking = [] # for graph plotting
 car = (0, 0)
+
+print(f"radius: {radius}")
+print(f"step: {STEP}")
 
 '''
 ^
@@ -34,7 +37,7 @@ def find_a_pythagoras(b, c): # find a in pythagoras theorem a^2 + b^2 = c^2
     (for a circle, as y moves futher from origin of cirle, the x interval/width of circle decreases)
     '''
     if c**2 < b**2: # if c is smaller than b (delta y), then the max val a (delta x) can be is c (radius)
-        return c
+        return 0
     return (c**2 - b**2) ** (1/2)
 
 def unzip_tuples(pairs):
@@ -43,17 +46,9 @@ def unzip_tuples(pairs):
 def get_distance_between_coords(point1, point2):
     delta_y = point1[1] - point2[1]
     delta_x = point1[0] - point2[0]
-
-    print(f"delta_x: {delta_x}, delta_y: {delta_y}")    
-    print(f"delta_x^2: {delta_x**2}, delta_y^2: {delta_y**2}")
-    print(f"sum: {delta_x**2 + delta_y**2}")
-    print(f"distance: {(delta_x**2 + delta_y**2)**(1/2)}")
-
     return (delta_x**2 + delta_y**2)**(1/2)
 
 def coords_within_range(a, b, range):
-    print(f"Checking if {a} and {b} are within {range}")    
-    print(range >= get_distance_between_coords(a, b))
     return range >= get_distance_between_coords(a, b)
 
 ##### setup #####
@@ -72,13 +67,11 @@ for cone in cones:
     map.setdefault((round_down(x, STEP), round_down(y, STEP)), []).append(cone)
 
 # show all cones in map
-for key, val in map.items():
-    print(f"{key}: {val}")
+# for key, val in map.items():
+#     print(f"{key}: {val}")
 
 # generate random car coordinates
 car = (random.uniform(MIN, MAX), random.uniform(MIN, MAX))
-
-print("Checking cones in range")
 print(f"Car is at: {car}")
 
 ##### main loop #####
@@ -95,23 +88,15 @@ for y_snap in range(min_y_snap, max_y_snap + STEP, STEP):
     max_x_snap = round_down(car[0] + x_maxreach, STEP)
     for x_snap in range(min_x_snap, max_x_snap + STEP, STEP):
         checking.append((x_snap, y_snap))
-        print(f"Checking {x_snap}, {y_snap}")
-        print(f"Cones in this interval: {map.get((x_snap, y_snap), [])}")
         # check cones individually if edge snap-point
         if (x_snap, y_snap) in map.keys() and (y_snap in {min_y_snap, max_y_snap} 
                                                 or x_snap in {min_x_snap, max_x_snap}):
             for cone in map[(x_snap, y_snap)]:
                 if coords_within_range(car, cone, radius):
-                    print(f"Cone in range! {cone}")
                     in_range.append(cone)
-                else:
-                    print(f"Cone not in range! {cone}")
         # otherwise guarenteed in range, so add all cones in interval
         elif (x_snap, y_snap) in map.keys():
-            print(f"Cones in range! {map[(x_snap, y_snap)]}")
             in_range = in_range + map[(x_snap, y_snap)]
-        else:
-            print(f"{(x_snap, y_snap)} is not in map keys {map.keys()}")
 
 # plot points
 import matplotlib.pyplot as plt
@@ -124,4 +109,8 @@ plt.scatter(cones_xs, cones_ys)
 plt.scatter(cones_inRange_xs, cones_inRange_ys, c="red")
 plt.scatter(check_snapPoints_xs, check_snapPoints_ys, c="yellow", alpha=0.5)
 plt.scatter([car[0]], [car[1]], c="black")
+
+circle = plt.Circle((car[0], car[1]), radius, color='blue', fill=False, linewidth=2)
+plt.gca().add_artist(circle)
+
 plt.show()
