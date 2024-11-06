@@ -79,32 +79,26 @@ print(f"Car is at: {car}")
 min_y_snap = round_down(car[1] - radius, STEP)
 max_y_snap = round_down(car[1] + radius, STEP)
 
-# checking snap-points that are not edge snap-points (all cones are guarenteed to be within range)
-for y_snap in range(min_y_snap + STEP, max_y_snap, STEP): #excluding edge snap-points
-    y_reach = abs(y_snap - car[1])
-    x_maxreach = find_a_pythagoras(y_reach, radius)
-
-    # search along y level for x values in range (excluding edge snap-points)
-    min_x_snap = round_down(car[0] - x_maxreach, STEP)
-    max_x_snap = round_down(car[0] + x_maxreach, STEP)
-    for x_snap in range(min_x_snap + STEP, max_x_snap, STEP):
-        checking.append((x_snap, y_snap))
-        if (x_snap, y_snap) in map.keys():
-            in_range = in_range + map[(x_snap,y_snap)]
-
-# edge snap-points, have to check if each cone is within range
 for y_snap in range(min_y_snap, max_y_snap + STEP, STEP):
     y_reach = abs(y_snap - car[1])
     x_maxreach = find_a_pythagoras(y_reach, radius)
 
+    # search along y level for x values in range
     min_x_snap = round_down(car[0] - x_maxreach, STEP)
     max_x_snap = round_down(car[0] + x_maxreach, STEP)
-    for x_snap in [min_x_snap, max_x_snap]:
+    for x_snap in range(min_x_snap, max_x_snap + STEP, STEP):
         checking.append((x_snap, y_snap))
-        if (x_snap, y_snap) in map.keys():
+        # check cones individually if edge snap-point
+        if (x_snap, y_snap) in map.keys() and (y_snap == min_y_snap or 
+                                               y_snap == max_y_snap or 
+                                               x_snap == min_x_snap or 
+                                               x_snap == max_x_snap):
             for cone in map[(x_snap,y_snap)]:
                 if coords_within_range(car, cone, radius):
                     in_range.append(cone)
+        # otherwise guarenteed in range, so add all cones in interval
+        elif (x_snap, y_snap) in map.keys():
+            in_range = in_range + map[(x_snap,y_snap)]
 
 # plot points
 import matplotlib.pyplot as plt
