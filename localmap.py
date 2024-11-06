@@ -6,6 +6,11 @@ MAX = -100
 STEP = 10 # intervals that cones snap to
 
 map = {}
+radius = 30
+in_range = []
+checking = [] # for graph plotting
+car = (0, 0)
+
 '''
 ^
 map of cones, key is (x, y) of interval cones snap to, value is list of cones in that interval
@@ -17,15 +22,6 @@ e.g
 to find the interval of a cone, you round down to the nearest multiple of STEP, 
 e.g -43.2 -> -50, 29.1 -> 20
 '''
-
-##### generate test data #####
-
-import random
-
-cones = [] # list of randomly generated cones to be added to the map later
-
-for _ in range(100):
-    cones.append((random.uniform(MIN, MAX), random.uniform(MIN, MAX)))
 
 # functions
 def round_down(x, interval=1):
@@ -43,30 +39,6 @@ def find_a_pythagoras(b, c): # find a in pythagoras theorem a^2 + b^2 = c^2
 def unzip_tuples(pairs):
     return [x[0] for x in pairs], [x[1] for x in pairs]
 
-# add cones to map
-
-for cone in cones:
-    x, y = cone[0], cone[1]
-    map.setdefault((round_down(x, STEP), round_down(y, STEP)), []).append(cone)
-
-# show all cones in map
-
-for key, val in map.items():
-    print(f"{key}: {val}")
-
-# generate random car
-
-# car = (random.uniform(MIN, MAX), random.uniform(MIN, MAX))
-car = (-40.5, 15.5)
-
-radius = 30 # radius we are interested in
-
-# keep cones within radius, and points we are checking to plot on graph
-in_range = []
-checking = []
-
-#check if specific cones are in range
-
 def get_distance_between_coords(point1, point2):
     delta_y = point1[1] - point2[1]
     delta_x = point1[0] - point2[0]
@@ -76,14 +48,38 @@ def get_distance_between_coords(point1, point2):
 def coords_within_range(a, b, range):
     return range >= get_distance_between_coords(a, b)
 
+##### setup #####
+
+# generate test data
+import random
+
+cones = []
+
+for _ in range(100):
+    cones.append((random.uniform(MIN, MAX), random.uniform(MIN, MAX)))
+
+# add cones to map
+for cone in cones:
+    x, y = cone[0], cone[1]
+    map.setdefault((round_down(x, STEP), round_down(y, STEP)), []).append(cone)
+
+# show all cones in map
+for key, val in map.items():
+    print(f"{key}: {val}")
+
+# generate random car coordinates
+# car = (random.uniform(MIN, MAX), random.uniform(MIN, MAX))
+car = (-40.5, 15.5)
+
 print("Checking cones in range")
 print(f"Car is at: {car}")
 
-# main loop
+##### main loop #####
 
 min_y_snap = round_down(car[1] - radius, STEP)
 max_y_snap = round_down(car[1] + radius, STEP)
 
+# checking snap-points that are not edge snap-points (all cones are guarenteed to be within range)
 for y_snap in range(min_y_snap + STEP, max_y_snap, STEP): #excluding edge snap-points
     y_reach = abs(y_snap - car[1])
     x_maxreach = find_a_pythagoras(y_reach, radius)
@@ -113,16 +109,12 @@ for y_snap in range(min_y_snap, max_y_snap + STEP, STEP):
 # plot points
 import matplotlib.pyplot as plt
 
-x_axis, y_axis = unzip_tuples(cones)
-plt.scatter(x_axis, y_axis) # all cones in blue
+cones_xs, cones_ys = unzip_tuples(cones)
+cones_inRange_xs, cones_inRange_ys = unzip_tuples(in_range)
+check_snapPoints_xs, check_snapPoints_ys = unzip_tuples(checking)
 
-x_axis, y_axis = unzip_tuples(in_range)
-plt.scatter(x_axis, y_axis, c="red") # cones detected in the range in red
-
-x_axis, y_axis = unzip_tuples(checking)
-plt.scatter(x_axis, y_axis, c="yellow", alpha=0.5) # all "snap" points checked in yellow
-
-plt.scatter([car[0]], [car[1]], c="black") # car in black
-
+plt.scatter(cones_xs, cones_ys)
+plt.scatter(cones_inRange_xs, cones_inRange_ys, c="red")
+plt.scatter(check_snapPoints_xs, check_snapPoints_ys, c="yellow", alpha=0.5)
+plt.scatter([car[0]], [car[1]], c="black")
 plt.show()
-# %%
