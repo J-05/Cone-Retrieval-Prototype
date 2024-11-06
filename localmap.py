@@ -1,12 +1,13 @@
 import math
 
 # setting range of map for testing purposes
-MIN = 100 # for both x and y
-MAX = -100
-STEP = 10 # intervals that cones snap to
+MIN = 5 # for both x and y
+MAX = -5
+STEP = 2 # intervals that cones snap to
 
+num_of_cones = 10
 map = {}
-radius = 30
+radius = 5
 in_range = []
 checking = [] # for graph plotting
 car = (0, 0)
@@ -43,9 +44,16 @@ def get_distance_between_coords(point1, point2):
     delta_y = point1[1] - point2[1]
     delta_x = point1[0] - point2[0]
 
-    return (delta_x**2 + delta_y**2)**1/2
+    print(f"delta_x: {delta_x}, delta_y: {delta_y}")    
+    print(f"delta_x^2: {delta_x**2}, delta_y^2: {delta_y**2}")
+    print(f"sum: {delta_x**2 + delta_y**2}")
+    print(f"distance: {(delta_x**2 + delta_y**2)**(1/2)}")
+
+    return (delta_x**2 + delta_y**2)**(1/2)
 
 def coords_within_range(a, b, range):
+    print(f"Checking if {a} and {b} are within {range}")    
+    print(range >= get_distance_between_coords(a, b))
     return range >= get_distance_between_coords(a, b)
 
 ##### setup #####
@@ -55,7 +63,7 @@ import random
 
 cones = []
 
-for _ in range(100):
+for _ in range(num_of_cones):
     cones.append((random.uniform(MIN, MAX), random.uniform(MIN, MAX)))
 
 # add cones to map
@@ -68,8 +76,7 @@ for key, val in map.items():
     print(f"{key}: {val}")
 
 # generate random car coordinates
-# car = (random.uniform(MIN, MAX), random.uniform(MIN, MAX))
-car = (-40.5, 15.5)
+car = (random.uniform(MIN, MAX), random.uniform(MIN, MAX))
 
 print("Checking cones in range")
 print(f"Car is at: {car}")
@@ -88,15 +95,23 @@ for y_snap in range(min_y_snap, max_y_snap + STEP, STEP):
     max_x_snap = round_down(car[0] + x_maxreach, STEP)
     for x_snap in range(min_x_snap, max_x_snap + STEP, STEP):
         checking.append((x_snap, y_snap))
+        print(f"Checking {x_snap}, {y_snap}")
+        print(f"Cones in this interval: {map.get((x_snap, y_snap), [])}")
         # check cones individually if edge snap-point
         if (x_snap, y_snap) in map.keys() and (y_snap in {min_y_snap, max_y_snap} 
                                                 or x_snap in {min_x_snap, max_x_snap}):
-            for cone in map[(x_snap,y_snap)]:
+            for cone in map[(x_snap, y_snap)]:
                 if coords_within_range(car, cone, radius):
+                    print(f"Cone in range! {cone}")
                     in_range.append(cone)
+                else:
+                    print(f"Cone not in range! {cone}")
         # otherwise guarenteed in range, so add all cones in interval
         elif (x_snap, y_snap) in map.keys():
-            in_range = in_range + map[(x_snap,y_snap)]
+            print(f"Cones in range! {map[(x_snap, y_snap)]}")
+            in_range = in_range + map[(x_snap, y_snap)]
+        else:
+            print(f"{(x_snap, y_snap)} is not in map keys {map.keys()}")
 
 # plot points
 import matplotlib.pyplot as plt
