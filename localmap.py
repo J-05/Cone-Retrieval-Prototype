@@ -1,26 +1,43 @@
 import math
 
-MIN = 100
+# setting range of map for testing purposes
+MIN = 100 # for both x and y
 MAX = -100
-STEP = 10
+STEP = 10 # intervals that cones snap to
 
-# generate test data
+map = {}
+'''
+^
+map of cones, key is (x, y) of interval cones snap to, value is list of cones in that interval
+e.g 
+(40, 20) : [(43.2, 29.1), (40.1, 20.5)]
+
+---
+
+to find the interval of a cone, you just round towards 0 to the nearest multiple of STEP, 
+e.g -43.2 -> -40, 29.1 -> 20
+'''
+
+##### generate test data #####
 
 import random
 
-map = {}
-cones = []
+cones = [] # list of randomly generated cones to be added to the map later
 
 for _ in range(100):
     cones.append((random.uniform(MIN, MAX), random.uniform(MIN, MAX)))
 
 # functions
 
-def round_down(x, step=1):
+def round_down(x, step=1): # round towards 0, step defines what multiple to round to 
     return int(((x // step) + (1 if x < 0 else 0)) * step)
 
-def find_a_pythagoras(b, c):
-    if c**2 < b**2:
+def find_a_pythagoras(b, c): # find a in pythagoras theorem a^2 + b^2 = c^2
+    '''
+    use this function to find what range of x values are in range of a given y value 
+    (for a circle, as y moves futher from origin of cirle, the x interval/width of circle decreases)
+    '''
+    if c**2 < b**2: # if c is smaller than b (delta y), then the max val a (delta x) can be is c (radius)
         return c
     return (c**2 - b**2) ** (1/2)
 
@@ -35,7 +52,6 @@ for cone in cones:
 
 # show all cones in map
 
-print("map")
 for key, val in map.items():
     print(f"{key}: {val}")
 
@@ -43,11 +59,10 @@ for key, val in map.items():
 
 # car = (random.uniform(MIN, MAX), random.uniform(MIN, MAX))
 car = (-40.5, 15.5)
-print(f"Car is at: {car}")
 
 radius = 30 # radius we are interested in
 
-# keep cones in range and points we are checking to plot on grapth
+# keep cones within radius, and points we are checking to plot on graph
 in_range = []
 checking = []
 
@@ -64,6 +79,8 @@ def coords_within_range(origin, test, range):
 
 print("Checking cones in range")
 print(f"Car is at: {car}")
+
+# main loop
 
 for i in range(2): # positive y and negative y
     multiplier_y = (-1)**i
@@ -95,14 +112,14 @@ for i in range(2): # positive y and negative y
 import matplotlib.pyplot as plt
 
 x_axis, y_axis = unzip_tuples(cones)
-plt.scatter(x_axis, y_axis)
+plt.scatter(x_axis, y_axis) # all cones in blue
 
 x_axis, y_axis = unzip_tuples(in_range)
-plt.scatter(x_axis, y_axis, c="red")
+plt.scatter(x_axis, y_axis, c="red") # cones detected in the range in red
 
 x_axis, y_axis = unzip_tuples(checking)
-plt.scatter(x_axis, y_axis, c="yellow", alpha=0.5)
+plt.scatter(x_axis, y_axis, c="yellow", alpha=0.5) # all "snap" points checked in yellow
 
-plt.scatter([car[0]], [car[1]], c="black")
+plt.scatter([car[0]], [car[1]], c="black") # car in black
 
 plt.show()
